@@ -2,32 +2,80 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>DashGen AI</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>DashGen AI</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-    <h1>DashGen AI</h1>
+<header>
+<h1>DashGen AI</h1>
+</header>
 
-    <div class="prompt-box">
-        <textarea id="question" placeholder="Ask a business question..."></textarea>
-        <button onclick="generateDashboard()">Generate Dashboard</button>
-    </div>
+<div class="container">
 
-    <div id="summary"></div>
-    
-    <h2>Table Data</h2>
-    <div id="table-container"></div>
-    
-    <h2>Chart</h2>
-    <canvas id="chartCanvas"></canvas>
-    <div id="advice" class="advice-box"></div>
-    
-    <script src="script.js"></script>
+<!-- Ask Question -->
+<div class="card">
+
+<h2>Ask Your Data</h2>
+
+<textarea id="question" placeholder="Ask a query..."></textarea>
+
+<button onclick="generateDashboard()">Generate Dashboard</button>
+
+</div>
+
+
+<!-- AI Summary -->
+<div class="card">
+
+<h2>AI Summary</h2>
+
+<div id="summary">
+Waiting for AI response...
+</div>
+
+</div>
+
+<!-- Table Section -->
+<div class="card">
+
+<h2>Result Table</h2>
+
+<div id="table-container"></div>
+
+</div>
+
+
+<!-- Chart Section -->
+<div class="card">
+
+<h2>Visualization</h2>
+
+<div class="chart-container">
+<canvas id="chartCanvas"></canvas>
+</div>
+
+</div>
+
+
+
+<!-- AI Advice -->
+<div class="card">
+
+<h2>AI Recommendation</h2>
+
+<div id="advice" class="recommended-box"></div>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
 
 </body>
-
 </html>
