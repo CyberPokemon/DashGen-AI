@@ -17,6 +17,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -218,5 +219,17 @@ public class FileStorageService {
             return "TEXT";
 
         return current;
+    }
+
+    public List<Map<String, Object>> getTableMetadata(String tableName) {
+
+        String sql = """
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_name = ?
+            ORDER BY ordinal_position
+            """;
+
+        return jdbcTemplate.queryForList(sql, tableName);
     }
 }
