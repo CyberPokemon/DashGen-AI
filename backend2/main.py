@@ -82,7 +82,7 @@ def generate_dashboard_logic(user_prompt):
     }
    
 
-# user_query=input("Enter your question")
-# logic = generate_dashboard_logic(user_query)
-# print("--- EXECUTIVE DASHBOARD ---")
-# print(logic)
+user_query="Show me which insurers are struggling with pending claims, and what is the total value at risk in percentage."
+logic = generate_dashboard_logic(user_query)
+print("--- EXECUTIVE DASHBOARD ---")
+print(logic)
