@@ -1,6 +1,7 @@
 package com.glitchers.backend.controller;
 
 import com.glitchers.backend.dto.ApiResponseDTO;
+import com.glitchers.backend.dto.FileStorageDto;
 import com.glitchers.backend.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +21,10 @@ public class FileManagerController {
     private FileStorageService fileStorageService;
 
     @PostMapping("/upload-file")
-    public ResponseEntity<ApiResponseDTO> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            fileStorageService.saveFile(file);
-            return ResponseEntity.ok(new ApiResponseDTO("File Uploaded"));
+            String tablename = fileStorageService.saveFile(file);
+            return ResponseEntity.ok(new FileStorageDto("file stored successfully",tablename));
         } catch (IOException e) {
             return ResponseEntity.badRequest().body(new ApiResponseDTO("file not uploaded"));
         }

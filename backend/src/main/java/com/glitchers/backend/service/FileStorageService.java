@@ -29,7 +29,7 @@ public class FileStorageService {
     private JdbcTemplate jdbcTemplate;
 
 
-    public void saveFile(MultipartFile fileToSave) throws IOException {
+    public String saveFile(MultipartFile fileToSave) throws IOException {
 
         if (fileToSave == null) {
             throw new NullPointerException("fileToSave is null");
@@ -40,13 +40,15 @@ public class FileStorageService {
         Files.copy(fileToSave.getInputStream(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         // Process CSV
-        processCSV(targetFile);
+        String tablename=processCSV(targetFile);
 
         // Delete original file
         targetFile.delete();
+
+        return tablename;
     }
 
-    private void processCSV(File csvFile) throws IOException {
+    private String processCSV(File csvFile) throws IOException {
 
         Reader reader = new FileReader(csvFile);
 
@@ -95,6 +97,8 @@ public class FileStorageService {
         reader = new FileReader(csvFile);
         parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
         insertRows(parser, headers, tableName);
+
+        return tableName;
     }
 
     private void createTable(Map<String,String> columnTypes, String tableName) {
