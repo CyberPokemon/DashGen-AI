@@ -232,4 +232,11 @@ public class FileStorageService {
 
         return jdbcTemplate.queryForList(sql, tableName);
     }
+
+
+    public List<Map<String,Object>> executeQuery(String sql){
+
+        return jdbcTemplate.queryForList(sql);
+
+    }
 }

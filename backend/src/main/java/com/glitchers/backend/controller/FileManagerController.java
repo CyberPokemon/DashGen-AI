@@ -41,4 +41,19 @@ public class FileManagerController {
         }
     }
 
+    @PostMapping("/query")
+    public ResponseEntity<?> runQuery(@RequestBody Map<String,String> request){
+
+        try
+        {
+            String sql = request.get("sql");
+            List<Map<String, Object>> ans = fileStorageService.executeQuery(sql);
+            return ResponseEntity.ok(ans);
+        }
+
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new ApiResponseDTO("error "+ e.getMessage()));
+        }
+    }
+
 }
