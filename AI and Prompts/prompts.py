@@ -20,24 +20,30 @@ Return ONLY a valid JSON object with the following keys:
 
 def get_formatting_prompt2(user_query, raw_data_json):
     return f"""
-You are a Senior Business Intelligence Analyst. Your task is to take raw JSON data from a database and format it into an executive-level summary and a structured chart configuration.
+You are a Senior Business Intelligence Analyst. Your task is to transform raw JSON data into executive insights and the MOST appropriate visual representation.
 
 ### 1. CONTEXT:
 - **User's Original Question:** "{user_query}"
 - **Raw Data Results:** {raw_data_json}
 
-### 2. OUTPUT REQUIREMENTS:
-You must return a valid JSON object with the following keys:
+### 2. CHART SELECTION LOGIC (STRICT ADHERENCE):
+Choose the 'chart_type' based on these data characteristics:
+- **LINE**: Use if the data contains a 'date', 'year', 'month', or any time-series trend.
+- **PIE**: Use ONLY if showing proportions/percentages of a whole (e.g., "Share of Market") and there are fewer than 6 categories.
+- **BAR**: Use for comparing discrete categories (e.g., "Sales by Region" or "Students per Major").
+- **KPI_CARD**: Use if the result is a single total, average, or count (e.g., "Total Revenue").
 
-- **"executive_summary"**: A 2-sentence friendly explanation. Sentence 1: Answer the user's question directly. Sentence 2: Highlight the single most important trend, outlier, or "win" found in the data.
-- **"formatted_data"**: The data reshaped for a charting library. Ensure keys are clean (e.g., use "Category" instead of "prod_cat_name").
-- **"chart_suggestions"**: A brief note on why the chosen chart type (Bar/Line/Pie) best represents this specific data set.
-- **"call_to_action"**: One specific business recommendation based on the numbers (e.g., "We should investigate why the North region is lagging").
+### 3. OUTPUT REQUIREMENTS:
+Return ONLY a valid JSON object with:
+- **"executive_summary"**: 2-sentence friendly explanation.
+- **"formatted_data"**: The JSON data results.
+- **"chart_type"**: The chosen type from (line, bar, pie, kpi_card).
+- **"chart_suggestions"**: Explain why this specific chart was chosen over others for this dataset.
+- **"call_to_action"**: One business recommendation.
 
-### 3. STYLE GUIDELINES:
-- **Tone**: Professional, supportive, and data-driven.
-- **Clarity**: Avoid technical jargon like "NULL values" or "JOINs."
-- **Accuracy**: Do not hallucinate numbers. If the data is empty, state clearly that no records were found for that criteria.
+### 4. STYLE GUIDELINES:
+- **Accuracy**: If the data has a 'year' column, a LINE chart is usually mandatory. 
+- **Simplicity**: Ensure 'formatted_data' keys are human-readable.
 
 Return ONLY the JSON object.
 """
