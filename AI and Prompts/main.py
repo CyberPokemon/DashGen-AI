@@ -80,19 +80,7 @@ def generate_dashboard_logic(user_prompt):
         "data_points": len(full_json_data),
         "call_to_action": analysis.call_to_action
     }
-    # STAGE 3: Insight Synthesis
-    structured_model2 = llm.with_structured_output(AnalysisResponse)
-    full_prompt2 = get_formatting_prompt2(user_prompt, json.dumps(json_data))
-    analysis = structured_model2.invoke(full_prompt2)
-
-    # FINAL RETURN: Combine everything for the Frontend
-    return {
-        "summary": analysis.executive_summary,
-        "table_data": json_data,           # This is your raw fetched table
-        "chart_type": analysis.chart_type,   # Confirmed chart type
-        "data_points": len(json_data),       # Count of rows fetched
-        "call_to_action": analysis.call_to_action
-    }
+   
 
 user_query = "Show me which insurers are struggling with pending claims, and what is the total value at risk"
 logic = generate_dashboard_logic(user_query)
