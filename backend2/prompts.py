@@ -20,24 +20,33 @@ Return ONLY a valid JSON object with the following keys:
 
 def get_formatting_prompt2(user_query, raw_data_json):
     return f"""
-You are a Senior Business Intelligence Analyst. Your task is to take raw JSON data from a database and format it into an executive-level summary and a structured chart configuration.
+# ROLE: Senior Business Intelligence Consultant
+# TASK: Context-Aware Data Visualization
 
-### 1. CONTEXT:
-- **User's Original Question:** "{user_query}"
-- **Raw Data Results:** {raw_data_json}
+### INPUT 1: USER INTENT
+- Query: "{user_query}"
+- Keywords to look for: "ratio", "percentage", "proportion", "share", "rate", "how much of".
 
-### 2. OUTPUT REQUIREMENTS:
-You must return a valid JSON object with the following keys:
+### INPUT 2: DATA EVIDENCE
+- Raw JSON: {raw_data_json}
+- Check Column Names: Do they include 'ratio', 'pct', or 'share'?
+- Check Value Ranges: Are the numbers between 0 and 1, or 0 and 100?
 
-- **"executive_summary"**: A 2-sentence friendly explanation. Sentence 1: Answer the user's question directly. Sentence 2: Highlight the single most important trend, outlier, or "win" found in the data.
-- **"formatted_data"**: The data reshaped for a charting library. Ensure keys are clean (e.g., use "Category" instead of "prod_cat_name").
-- **"chart_suggestions"**: A brief note on why the chosen chart type (Bar/Line/Pie) best represents this specific data set.
-- **"call_to_action"**: One specific business recommendation based on the numbers (e.g., "We should investigate why the North region is lagging").
+### CHART SELECTION RULES (PRIORITY ORDER):
+1. **KPI_CARD**: If the JSON has only 1 row and 1 value.
+2. **LINE**: If a 'year' or 'date' column exists (Trend analysis).
+3. **PIE**: If the User Query asks for "ratio/percentage/share".
+4. **BAR**: If the User Query asks for "comparison" or "ranking" among different insurers/categories.
 
-### 3. STYLE GUIDELINES:
-- **Tone**: Professional, supportive, and data-driven.
-- **Clarity**: Avoid technical jargon like "NULL values" or "JOINs."
-- **Accuracy**: Do not hallucinate numbers. If the data is empty, state clearly that no records were found for that criteria.
+### OUTPUT STRUCTURE:
+Return ONLY a valid JSON object:
+{{
+  "executive_summary": "Answer the query based on the numbers.",
+  "formatted_data": {raw_data_json},
+  "chart_type": "pie | line | bar | kpi_card",
+  "call_to_action": "One business recommendation."
+}}
 
-Return ONLY the JSON object.
+### FINAL INSTRUCTION:
+Compare the User Intent against the Data Evidence. If the user asks for a 'ratio' but the data shows 'totals', explain this discrepancy in the summary.
 """

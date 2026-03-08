@@ -82,7 +82,7 @@ def generate_dashboard_logic(user_prompt):
     }
    
 
-Q=input("Enter your question")
-logic = generate_dashboard_logic(user_query)
-print("--- EXECUTIVE DASHBOARD ---")
-print(logic)
+# user_query=input("Enter your question")
+# logic = generate_dashboard_logic(user_query)
+# print("--- EXECUTIVE DASHBOARD ---")
+# print(logic)
