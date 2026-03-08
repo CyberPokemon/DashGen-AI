@@ -18,9 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-//import org.apache.commons.io;
 
 @Service
 public class FileStorageService {
@@ -57,8 +54,6 @@ public class FileStorageService {
 
         Map<String, Integer> headers = parser.getHeaderMap();
 
-//        String tableName = "dataset_" + UUID.randomUUID().toString().replace("-", "");
-
         String fileName = csvFile.getName()
                 .replace(".csv", "")
                 .toLowerCase()
@@ -72,24 +67,33 @@ public class FileStorageService {
             columnTypes.put(column, "TEXT");
         }
 
+        int sampleSize = 50;
+        int count = 0;
+
         for (CSVRecord record : parser) {
 
             for (String column : headers.keySet()) {
 
                 String value = record.get(column);
-
                 String detectedType = detectType(value);
 
-                if (!detectedType.equals("TEXT")) {
-                    columnTypes.put(column, detectedType);
-                }
+                String currentType = columnTypes.get(column);
+
+                columnTypes.put(column, upgradeType(currentType, detectedType));
             }
 
-            break; // just inspect first row
+            count++;
+            if (count >= sampleSize) break;
         }
 
         createTable(columnTypes, tableName);
 
+
+        parser.close();
+        reader.close();
+
+        reader = new FileReader(csvFile);
+        parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
         insertRows(parser, headers, tableName);
     }
 
@@ -116,46 +120,25 @@ public class FileStorageService {
         jdbcTemplate.execute(sql.toString());
     }
 
-//    private void createTable(Map<String, Integer> headers, String tableName) {
-//
-//        StringBuilder sql = new StringBuilder("CREATE TABLE " + tableName + " (");
-//
-////        for (String column : headers.keySet()) {
-////
-////            sql.append(column).append(" TEXT,");
-////        }
-//
-//        for (String column : headers.keySet()) {
-//
-//            String safeColumn = column
-//                    .trim()
-//                    .toLowerCase()
-//                    .replaceAll("[^a-z0-9]", "_");
-//
-//            sql.append(safeColumn).append(" TEXT,");
-//        }
-//        sql.deleteCharAt(sql.length() - 1);
-//
-//        sql.append(")");
-//
-//        jdbcTemplate.execute(sql.toString());
-//    }
-
-
     private void insertRows(CSVParser parser,
                             Map<String,Integer> headers,
                             String tableName) {
 
-        for (CSVRecord record : parser) {
+            for (CSVRecord record : parser) {
 
-            StringBuilder columns = new StringBuilder();
-            StringBuilder values = new StringBuilder();
+                StringBuilder columns = new StringBuilder();
+                StringBuilder values = new StringBuilder();
 
             for (String column : headers.keySet()) {
 
                 columns.append(column).append(",");
+
+                String value = record.get(column);
+                value = normalizeDate(value);
+                value = value.replace("'", "''");
+
                 values.append("'")
-                        .append(record.get(column).replace("'", "''"))
+                        .append(value)
                         .append("'")
                         .append(",");
             }
@@ -163,7 +146,8 @@ public class FileStorageService {
             columns.deleteCharAt(columns.length()-1);
             values.deleteCharAt(values.length()-1);
 
-            String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")";
+            String sql = "INSERT INTO " + tableName +
+                    " (" + columns + ") VALUES (" + values + ")";
 
             jdbcTemplate.execute(sql);
         }
@@ -175,18 +159,27 @@ public class FileStorageService {
             return "TEXT";
         }
 
+        // INTEGER
         if (value.matches("-?\\d+")) {
             return "INTEGER";
         }
 
-        if (value.matches("-?\\d+\\.\\d+")) {
+        // DOUBLE
+        if (value.matches("-?\\d+(\\.\\d+)?([eE]-?\\d+)?")) {
             return "DOUBLE PRECISION";
         }
 
+        // DATE format YYYY-MM-DD
         if (value.matches("\\d{4}-\\d{2}-\\d{2}")) {
             return "DATE";
         }
 
+        // DATE format MM/DD/YYYY
+        if (value.matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
+            return "DATE";
+        }
+
+        // BOOLEAN
         if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
             return "BOOLEAN";
         }
@@ -194,5 +187,32 @@ public class FileStorageService {
         return "TEXT";
     }
 
+    private String normalizeDate(String value) {
 
+        if (value.matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
+
+            String[] parts = value.split("/");
+
+            String month = parts[0].length() == 1 ? "0" + parts[0] : parts[0];
+            String day = parts[1].length() == 1 ? "0" + parts[1] : parts[1];
+            String year = parts[2];
+
+            return year + "-" + month + "-" + day;
+        }
+
+        return value;
+    }
+
+    private String upgradeType(String current, String detected) {
+
+        if (current.equals("TEXT")) return detected;
+
+        if (current.equals("INTEGER") && detected.equals("DOUBLE PRECISION"))
+            return "DOUBLE PRECISION";
+
+        if (detected.equals("TEXT"))
+            return "TEXT";
+
+        return current;
+    }
 }
