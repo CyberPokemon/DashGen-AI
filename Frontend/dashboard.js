@@ -42,6 +42,12 @@ body:JSON.stringify({query:query})
 
 const data=await response.json();
 
+const recommended = recommendChart(data);
+
+document.getElementById("recommendedChart").innerText = recommended;
+
+document.getElementById("chartType").value = recommended;
+
 window.lastData = data;
 
 createTable(data);
@@ -150,6 +156,22 @@ easing:"easeOutQuart"
 }
 
 });
+
+}
+
+function recommendChart(data){
+
+const count = data.length;
+
+if(count <= 5){
+return "pie";
+}
+
+if(count <= 10){
+return "bar";
+}
+
+return "line";
 
 }
 
