@@ -55,7 +55,10 @@ def generate_dashboard_logic(user_prompt):
 
     # --- STAGE 3: Insight Synthesis (Using a Preview) ---
     # We only send the first 10 rows for analysis to avoid 'NoneType' errors
-    data_preview = full_json_data[:10] 
+    if len(full_json_data)>10:
+        data_preview = full_json_data[:10] 
+    else:
+        data_preview=full_json_data
     
     structured_model2 = llm.with_structured_output(AnalysisResponse)
     full_prompt2 = get_formatting_prompt2(user_prompt, json.dumps(data_preview))
