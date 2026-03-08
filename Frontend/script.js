@@ -4,7 +4,7 @@ async function generateDashboard() {
 
     const question = document.getElementById("question").value;
 
-    const response = await fetch("http://127.0.0.1:8000/generate-dashboard", {
+    const response = await fetch("https://dashgen-ai.onrender.com/generate-dashboard", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
