@@ -36,32 +36,65 @@ def get_llm():
 def generate_dashboard_logic(user_prompt):
     llm = get_llm()
     
-    # STAGE 1
+    # --- STAGE 1: SQL Generation ---
     structured_model1 = llm.with_structured_output(DashboardResponse)
     schema = get_db_schema_string()
     full_prompt = f"{get_formatting_prompt1(schema)}\n\nUser Request: {user_prompt}"
-    response = structured_model1.invoke(full_prompt)
+    sql_response = structured_model1.invoke(full_prompt)
     
-    # STAGE 2
-    json_data = execute_sql_to_json(response.sql)
+    # --- STAGE 2: Database Fetching ---
+    full_json_data = execute_sql_to_json(sql_response.sql)
     
-    # Safety Check: If no data, return a custom response or handle gracefully
-    if not json_data:
+    if not full_json_data:
         return {
-            "executive_summary": "No data was found for the requested period.",
-            "formatted_data": [],
+            "summary": "No records found in the database.",
+            "table_data": [],
             "chart_type": "kpi",
-            "call_to_action": "Try broadening your search filters."
+            "data_points": 0
         }
 
-    # STAGE 3
+    # --- STAGE 3: Insight Synthesis (Using a Preview) ---
+    # We only send the first 10 rows for analysis to avoid 'NoneType' errors
+    data_preview = full_json_data[:10] 
+    
+    structured_model2 = llm.with_structured_output(AnalysisResponse)
+    full_prompt2 = get_formatting_prompt2(user_prompt, json.dumps(data_preview))
+    
+    analysis = structured_model2.invoke(full_prompt2)
+
+    # --- SAFETY CHECK ---
+    # If the AI still returns None, we provide a fallback
+    if analysis is None:
+        return {
+            "summary": "Data retrieved successfully, but analysis could not be generated.",
+            "table_data": full_json_data,
+            "chart_type": sql_response.chart_type,
+            "data_points": len(full_json_data)
+        }
+
+    # --- FINAL RETURN ---
+    return {
+        "summary": analysis.executive_summary,
+        "table_data": full_json_data, # Return the WHOLE table for the UI
+        "chart_type": analysis.chart_type,
+        "data_points": len(full_json_data),
+        "call_to_action": analysis.call_to_action
+    }
+    # STAGE 3: Insight Synthesis
     structured_model2 = llm.with_structured_output(AnalysisResponse)
     full_prompt2 = get_formatting_prompt2(user_prompt, json.dumps(json_data))
-    return structured_model2.invoke(full_prompt2)
+    analysis = structured_model2.invoke(full_prompt2)
+
+    # FINAL RETURN: Combine everything for the Frontend
+    return {
+        "summary": analysis.executive_summary,
+        "table_data": json_data,           # This is your raw fetched table
+        "chart_type": analysis.chart_type,   # Confirmed chart type
+        "data_points": len(json_data),       # Count of rows fetched
+        "call_to_action": analysis.call_to_action
+    }
 
 user_query = "Show me which insurers are struggling with pending claims, and what is the total value at risk"
 logic = generate_dashboard_logic(user_query)
 print("--- EXECUTIVE DASHBOARD ---")
-print(f"Summary: {logic.executive_summary}")
-print(f"Action: {logic.call_to_action}")
-print(f"Data Points: {len(logic.formatted_data)}")
+print(logic)
