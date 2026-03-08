@@ -1,0 +1,64 @@
+# ========== BACKEND (Spring Boot / Java) ==========
+/backend/target/
+**/target/
+**/build/
+
+*.class
+*.jar
+*.war
+*.log
+
+# IDE / Tooling
+/backend/.idea/
+*.iml
+*.ipr
+*.iws
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# STS specific
+.apt_generated
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ========== FRONTEND (React / Node.js) ==========
+/frontend/node_modules/
+frontend/build/
+frontend/dist/
+
+# Env files (ignore any .env files anywhere)
+.env
+.env.*
+**/.env
+**/.env.*
+
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# ========== COMMON ==========
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# VSCode and JetBrains IDEs
+.vscode/
+.idea/
+
+# Misc
+*.swp
+*.bak
+*.tmp
+*.log
