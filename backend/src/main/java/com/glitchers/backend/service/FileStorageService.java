@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -65,36 +66,80 @@ public class FileStorageService {
 
         String tableName = "dataset_" + fileName;
 
-        createTable(headers, tableName);
+        Map<String, String> columnTypes = new HashMap<>();
+
+        for (String column : headers.keySet()) {
+            columnTypes.put(column, "TEXT");
+        }
+
+        for (CSVRecord record : parser) {
+
+            for (String column : headers.keySet()) {
+
+                String value = record.get(column);
+
+                String detectedType = detectType(value);
+
+                if (!detectedType.equals("TEXT")) {
+                    columnTypes.put(column, detectedType);
+                }
+            }
+
+            break; // just inspect first row
+        }
+
+        createTable(columnTypes, tableName);
 
         insertRows(parser, headers, tableName);
     }
 
-
-    private void createTable(Map<String, Integer> headers, String tableName) {
+    private void createTable(Map<String,String> columnTypes, String tableName) {
 
         StringBuilder sql = new StringBuilder("CREATE TABLE " + tableName + " (");
 
-//        for (String column : headers.keySet()) {
-//
-//            sql.append(column).append(" TEXT,");
-//        }
+        for (Map.Entry<String,String> entry : columnTypes.entrySet()) {
 
-        for (String column : headers.keySet()) {
-
-            String safeColumn = column
+            String column = entry.getKey()
                     .trim()
                     .toLowerCase()
                     .replaceAll("[^a-z0-9]", "_");
 
-            sql.append(safeColumn).append(" TEXT,");
+            sql.append(column)
+                    .append(" ")
+                    .append(entry.getValue())
+                    .append(",");
         }
-        sql.deleteCharAt(sql.length() - 1);
 
+        sql.deleteCharAt(sql.length()-1);
         sql.append(")");
 
         jdbcTemplate.execute(sql.toString());
     }
+
+//    private void createTable(Map<String, Integer> headers, String tableName) {
+//
+//        StringBuilder sql = new StringBuilder("CREATE TABLE " + tableName + " (");
+//
+////        for (String column : headers.keySet()) {
+////
+////            sql.append(column).append(" TEXT,");
+////        }
+//
+//        for (String column : headers.keySet()) {
+//
+//            String safeColumn = column
+//                    .trim()
+//                    .toLowerCase()
+//                    .replaceAll("[^a-z0-9]", "_");
+//
+//            sql.append(safeColumn).append(" TEXT,");
+//        }
+//        sql.deleteCharAt(sql.length() - 1);
+//
+//        sql.append(")");
+//
+//        jdbcTemplate.execute(sql.toString());
+//    }
 
 
     private void insertRows(CSVParser parser,
@@ -123,4 +168,31 @@ public class FileStorageService {
             jdbcTemplate.execute(sql);
         }
     }
+
+    private String detectType(String value) {
+
+        if (value == null || value.isEmpty()) {
+            return "TEXT";
+        }
+
+        if (value.matches("-?\\d+")) {
+            return "INTEGER";
+        }
+
+        if (value.matches("-?\\d+\\.\\d+")) {
+            return "DOUBLE PRECISION";
+        }
+
+        if (value.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return "DATE";
+        }
+
+        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+            return "BOOLEAN";
+        }
+
+        return "TEXT";
+    }
+
+
 }
