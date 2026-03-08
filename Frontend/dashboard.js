@@ -24,161 +24,160 @@ alert("File uploaded successfully");
 
 
 
-async function sendQuery(){
+async function sendQuery() {
 
-const query=document.getElementById("queryInput").value;
+    const query = document.getElementById("queryInput").value;
 
-const response=await fetch("http://localhost:5000/query",{
+    const response = await fetch("http://localhost:8000/generate-dashboard", {
 
-method:"POST",
+        method: "POST",
 
-headers:{
-"Content-Type":"application/json"
-},
+        headers: {
+            "Content-Type": "application/json"
+        },
 
-body:JSON.stringify({query:query})
+        body: JSON.stringify({
+            question: query
+        })
 
-});
+    });
 
-const data=await response.json();
+    const result = await response.json();
 
-const recommended = recommendChart(data);
+    if (result.status !== "success") {
+        alert("Error from API");
+        return;
+    }
 
-document.getElementById("recommendedChart").innerText = recommended;
+    const apiData = result.data;
 
-document.getElementById("chartType").value = recommended;
+    /* convert API format → chart format */
 
-window.lastData = data;
+    const data = apiData.table_data.map(row => ({
+        name: row.life_insurer,
+        value: row.percentage_value_at_risk
+    }));
 
-createTable(data);
+    /* update recommendation */
 
-createChart(data);
+    document.getElementById("recommendedChart").innerText = apiData.chart_type;
 
-}
+    /* auto-select chart */
 
+    const chartMap = {
+        "Pie Chart": "pie",
+        "Bar Chart": "bar",
+        "Line Chart": "line"
+    };
 
+    const chartType = chartMap[apiData.chart_type] || "bar";
 
-function createTable(data){
+    document.getElementById("chartType").value = chartType;
 
-const tableHead=document.querySelector("#resultTable thead");
+    window.lastData = data;
 
-const tableBody=document.querySelector("#resultTable tbody");
+    /* render */
 
-tableHead.innerHTML="";
-tableBody.innerHTML="";
+    createTable(data);
+    createChart(data);
 
-const columns=Object.keys(data[0]);
+    /* optional summary display */
 
-let headRow="<tr>";
-
-columns.forEach(col=>{
-
-headRow+=`<th>${col}</th>`;
-
-});
-
-headRow+="</tr>";
-
-tableHead.innerHTML=headRow;
-
-data.forEach(row=>{
-
-let tr="<tr>";
-
-columns.forEach(col=>{
-
-tr+=`<td>${row[col]}</td>`;
-
-});
-
-tr+="</tr>";
-
-tableBody.innerHTML+=tr;
-
-});
+    alert(apiData.summary);
 
 }
 
 
+function createTable(data) {
 
-function createChart(data){
+    const tableHead = document.querySelector("#resultTable thead");
+    const tableBody = document.querySelector("#resultTable tbody");
 
-const labels = data.map(d => d.name);
-const values = data.map(d => d.value);
+    tableHead.innerHTML = "";
+    tableBody.innerHTML = "";
 
-const chartType = document.getElementById("chartType").value;
+    let headRow = "<tr><th>Life Insurer</th><th>Percentage Value At Risk</th></tr>";
 
-const ctx = document.getElementById("chartCanvas");
+    tableHead.innerHTML = headRow;
 
-if(chart){
-chart.destroy();
-}
+    data.forEach(row => {
 
-chart = new Chart(ctx,{
+        let tr = `<tr>
+        <td>${row.name}</td>
+        <td>${row.value.toFixed(2)}%</td>
+        </tr>`;
 
-type: chartType,
+        tableBody.innerHTML += tr;
 
-data:{
-
-labels: labels,
-
-datasets:[{
-
-label: "Data",
-
-data: values,
-
-backgroundColor:[
-"#2563eb",
-"#22c55e",
-"#f59e0b",
-"#ef4444",
-"#8b5cf6",
-"#14b8a6"
-],
-
-borderColor:"#1e293b",
-borderWidth:1
-
-}]
-
-},
-
-options:{
-
-responsive:true,
-maintainAspectRatio:false,
-animation:{
-duration:1000,
-easing:"easeOutQuart"
-}
+    });
 
 }
 
-});
+function createChart(data) {
+
+    /* limit to top 10 for visualization */
+
+    data = data
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 10);
+
+    const labels = data.map(d => d.name);
+    const values = data.map(d => d.value);
+
+    const chartType = document.getElementById("chartType").value;
+
+    const ctx = document.getElementById("chartCanvas");
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+
+        type: chartType,
+
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Value at Risk %",
+                data: values,
+                backgroundColor: [
+                    "#2563eb", "#22c55e", "#f59e0b", "#ef4444",
+                    "#8b5cf6", "#14b8a6", "#6366f1", "#e11d48",
+                    "#10b981", "#f97316"
+                ],
+                borderWidth: 1
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+
+    });
+
+}
+function recommendChart(data) {
+
+    const count = data.length;
+
+    if (count <= 5) {
+        return "pie";
+    }
+
+    if (count <= 10) {
+        return "bar";
+    }
+
+    return "line";
 
 }
 
-function recommendChart(data){
+document.getElementById("chartType").addEventListener("change", function () {
 
-const count = data.length;
-
-if(count <= 5){
-return "pie";
-}
-
-if(count <= 10){
-return "bar";
-}
-
-return "line";
-
-}
-
-document.getElementById("chartType").addEventListener("change", function(){
-
-if(window.lastData){
-createChart(window.lastData);
-}
+    if (window.lastData) {
+        createChart(window.lastData);
+    }
 
 });
