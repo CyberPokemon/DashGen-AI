@@ -1,18 +1,18 @@
 let chart;
 
-async function uploadFile(){
+async function uploadFile() {
 
-const file=document.getElementById("fileInput").files[0];
+    const file = document.getElementById("fileInput").files[0];
 
-const formData=new FormData();
-formData.append("file",file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-await fetch("https://dashgen-ai.onrender.com/upload",{
-method:"POST",
-body:formData
-});
+    await fetch("http://127.0.0.1:8080/filesapi/upload-file", {
+        method: "POST",
+        body: formData
+    });
 
-alert("File uploaded successfully");
+    alert("File uploaded successfully");
 
 }
 
@@ -38,7 +38,7 @@ async function generateDashboard() {
     displayChart(data.chart_type, data.table_data);
 }
 
-function displayAdvice(advice){
+function displayAdvice(advice) {
     document.getElementById("advice").innerHTML =
         "<b>AI Recommendation:</b> " + advice;
 }
