@@ -2,80 +2,91 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
-<title>DashGen AI</title>
+    <meta charset="UTF-8">
+    <title>DashGen AI</title>
 
-<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<header>
-<h1>DashGen AI</h1>
-</header>
+    <header>
+        <h1>DashGen AI</h1>
+    </header>
 
-<div class="container">
+    <div class="container">
 
-<!-- Ask Question -->
-<div class="card">
+        <!-- Upload Dataset -->
+        <div class="card">
 
-<h2>Ask Your Data</h2>
+            <h2>Upload Dataset</h2>
 
-<textarea id="question" placeholder="Ask a query..."></textarea>
+            <input type="file" id="fileInput">
+            <button onclick="uploadFile()">Upload</button>
 
-<button onclick="generateDashboard()">Generate Dashboard</button>
+        </div>
 
-</div>
+        <!-- Ask Question -->
+        <div class="card">
 
+            <h2>Ask Your Data</h2>
 
-<!-- AI Summary -->
-<div class="card">
+            <textarea id="question" placeholder="Ask a query..."></textarea>
 
-<h2>AI Summary</h2>
+            <button onclick="generateDashboard()">Generate Dashboard</button>
 
-<div id="summary">
-Waiting for AI response...
-</div>
-
-</div>
-
-<!-- Table Section -->
-<div class="card">
-
-<h2>Result Table</h2>
-
-<div id="table-container"></div>
-
-</div>
+        </div>
 
 
-<!-- Chart Section -->
-<div class="card">
+        <!-- AI Summary -->
+        <div class="card">
 
-<h2>Visualization</h2>
+            <h2>AI Summary</h2>
 
-<div class="chart-container">
-<canvas id="chartCanvas"></canvas>
-</div>
+            <div id="summary">
+                Waiting for AI response...
+            </div>
 
-</div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="card">
+
+            <h2>Result Table</h2>
+
+            <div id="table-container"></div>
+
+        </div>
+
+
+        <!-- Chart Section -->
+        <div class="card">
+
+            <h2>Visualization</h2>
+
+            <div class="chart-container">
+                <canvas id="chartCanvas"></canvas>
+            </div>
+
+        </div>
 
 
 
-<!-- AI Advice -->
-<div class="card">
+        <!-- AI Advice -->
+        <div class="card">
 
-<h2>AI Recommendation</h2>
+            <h2>AI Recommendation</h2>
 
-<div id="advice" class="recommended-box"></div>
+            <div id="advice" class="recommended-box"></div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
 
 </body>
+
 </html>

@@ -1,5 +1,21 @@
 let chart;
 
+async function uploadFile() {
+
+    const file = document.getElementById("fileInput").files[0];
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    await fetch("http://127.0.0.1:8080/filesapi/upload-file", {
+        method: "POST",
+        body: formData
+    });
+
+    alert("File uploaded successfully");
+
+}
+
 async function generateDashboard() {
 
     const question = document.getElementById("question").value;
@@ -22,7 +38,7 @@ async function generateDashboard() {
     displayChart(data.chart_type, data.table_data);
 }
 
-function displayAdvice(advice){
+function displayAdvice(advice) {
     document.getElementById("advice").innerHTML =
         "<b>AI Recommendation:</b> " + advice;
 }
