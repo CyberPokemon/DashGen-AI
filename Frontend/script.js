@@ -1,5 +1,21 @@
 let chart;
 
+async function uploadFile(){
+
+const file=document.getElementById("fileInput").files[0];
+
+const formData=new FormData();
+formData.append("file",file);
+
+await fetch("https://dashgen-ai.onrender.com/upload",{
+method:"POST",
+body:formData
+});
+
+alert("File uploaded successfully");
+
+}
+
 async function generateDashboard() {
 
     const question = document.getElementById("question").value;
