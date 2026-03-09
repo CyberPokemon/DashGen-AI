@@ -11,7 +11,6 @@ load_dotenv()
 
 class DashboardResponse(BaseModel):
     sql: str = Field(description="The SQL query to run against the database")
-    chart_type: str = Field(description="The type of chart: 'bar', 'line', 'pie', or 'kpi'")
     title: str = Field(description="A clean title for the chart")
     insight: str = Field(description="A 1-sentence executive summary of the data")
 
@@ -41,7 +40,6 @@ def generate_dashboard_logic(user_prompt):
     schema = get_db_schema_string()
     full_prompt = f"{get_formatting_prompt1(schema)}\n\nUser Request: {user_prompt}"
     sql_response = structured_model1.invoke(full_prompt)
-    
     # --- STAGE 2: Database Fetching ---
     full_json_data = execute_sql_to_json(sql_response.sql)
     
@@ -85,7 +83,7 @@ def generate_dashboard_logic(user_prompt):
     }
    
 
-# user_query=input("Enter your question")
-# logic = generate_dashboard_logic(user_query)
-# print("--- EXECUTIVE DASHBOARD ---")
-# print(logic)
+#user_query=input("Enter:")
+#logic = generate_dashboard_logic(user_query)
+#print("--- EXECUTIVE DASHBOARD ---")
+#print(logic)
