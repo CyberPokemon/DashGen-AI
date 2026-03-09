@@ -11,8 +11,7 @@ def get_formatting_prompt1(schema):
 
 ### OUTPUT FORMAT:
 Return ONLY a valid JSON object with the following keys:
-- "sql": The PostgreSQL query.
-- "chart_type": (Options: 'line', 'bar', 'pie', 'kpi_card').
+- "sql": The PostgreSQL query and take a note that year is in string format.
 - "summary": A 1-sentence business insight based on the intended query.
 """
 
@@ -26,12 +25,11 @@ You are a Senior Business Intelligence Analyst. Your task is to transform raw JS
 - **User's Original Question:** "{user_query}"
 - **Raw Data Results:** {raw_data_json}
 
-### 2. CHART SELECTION LOGIC (STRICT ADHERENCE):
-Choose the 'chart_type' based on these data characteristics:
-- **LINE**: Use if the data contains a 'date', 'year', 'month', or any time-series trend.
-- **PIE**: Use ONLY if showing proportions/percentages of a whole (e.g., "Share of Market") and there are fewer than 6 categories.
-- **BAR**: Use for comparing discrete categories (e.g., "Sales by Region" or "Students per Major").
-- **KPI_CARD**: Use if the result is a single total, average, or count (e.g., "Total Revenue").
+### 2. CHART SELECTION LOGIC (STRICT HIERARCHY):
+1. IF the data contains exactly ONE row and ONE value (e.g., a single Total or Count) -> ALWAYS 'kpi_card'.
+2. IF there is a column representing time (year, date, month, quarter) AND more than 2 data points -> ALWAYS 'line'.
+3. IF the query asks for "percentage", "distribution", or "share" AND unique categories are < 6 -> 'pie'.
+4. IF comparing values across names, categories, or labels -> 'bar'.
 
 ### 3. OUTPUT REQUIREMENTS:
 Return ONLY a valid JSON object with:
