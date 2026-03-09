@@ -48,7 +48,8 @@ def generate_dashboard_logic(user_prompt):
             "summary": "No records found in the database.",
             "table_data": [],
             "chart_type": "kpi",
-            "data_points": 0
+            "data_points": 0,
+            "call_to_action":"No recommendation"
         }
 
     # --- STAGE 3: Insight Synthesis (Using a Preview) ---
@@ -69,8 +70,9 @@ def generate_dashboard_logic(user_prompt):
         return {
             "summary": "Data retrieved successfully, but analysis could not be generated.",
             "table_data": full_json_data,
-            "chart_type": sql_response.chart_type,
-            "data_points": len(full_json_data)
+            "chart_type": "BAR",
+            "data_points": len(full_json_data),
+             "call_to_action": "No recommendation"
         }
 
     # --- FINAL RETURN ---
